@@ -1,8 +1,12 @@
 package modules
 
 import (
+	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"hippocurl/utils"
+	"log"
 	"net"
 	"net/http"
 	"time"
@@ -13,7 +17,7 @@ import (
 
 type ExploreModule struct{}
 
-var _ HippoModule = (*ExploreModule)(nil)
+var logger *log.Logger
 
 func (e ExploreModule) Name() string {
 	return "explore"
@@ -23,12 +27,13 @@ func (e ExploreModule) Description() string {
 	return "Profiles a given hostname or IP address, fetching DNS records, geolocation, and port scan data."
 }
 
-func (e ExploreModule) Execute(args []string) {
+func (e ExploreModule) Execute(ctx context.Context, args []string) {
 	if len(args) != 1 {
 		fmt.Println("Usage: hc explore [hostname/IP]")
 		return
 	}
 	host := args[0]
+	logger = ctx.Value(utils.LoggerKey).(*log.Logger)
 
 	explore(host)
 }
@@ -40,9 +45,8 @@ func (e ExploreModule) Logo() string {
 func explore(host string) {
 	spinner := spinner.New(spinner.CharSets[35], 100*time.Millisecond)
 
-	// Fetch DNS records first
-	fmt.Println()
-	fmt.Println("=======================")
+	// Fetch DNS records
+	fmt.Println("\n=======================")
 	fmt.Println("      DNS RECORDS ")
 	fmt.Println("=======================")
 	spinner.Start()
@@ -51,17 +55,22 @@ func explore(host string) {
 	dnsTable.Print()
 
 	ips, err := net.LookupIP(host)
+	filteredIPs := []net.IP{}
+	for _, ip := range ips {
+		if ip.To4() != nil { // Only include IPv4 addresses
+			filteredIPs = append(filteredIPs, ip)
+		}
+	}
 	if err != nil {
 		fmt.Printf("Error resolving host: %v\n", err)
 		return
 	}
 
-	fmt.Println()
-	fmt.Println("=======================")
+	fmt.Println("\n=======================")
 	fmt.Println("      SERVER SCANS ")
 	fmt.Println("=======================")
 	spinner.Start()
-	ipTbl := table.New(
+	serverTbl := table.New(
 		"[IP Address]",
 		"[Country]",
 		"[Region]",
@@ -70,17 +79,19 @@ func explore(host string) {
 		"[HTTPS]",
 		"[SSH]",
 		"[SFTP]",
+		"[SSL Issuer]",
+		"[SSL Expiry]",
 	)
 
-	for _, ip := range ips {
-		geolocateIP(ip.String(), ipTbl)
+	for _, ip := range filteredIPs {
+		geolocateIP(ip.String(), serverTbl)
 	}
 
 	spinner.Stop()
-	ipTbl.Print()
+	serverTbl.Print()
 }
 
-func geolocateIP(ip string, ipTbl table.Table) {
+func geolocateIP(ip string, serverTbl table.Table) {
 	url := fmt.Sprintf("https://ipinfo.io/%s/json", ip)
 	resp, err := http.Get(url)
 	if err != nil {
@@ -96,7 +107,8 @@ func geolocateIP(ip string, ipTbl table.Table) {
 	}
 
 	openPorts := scanOpenPorts(ip)
-	ipTbl.AddRow(
+	issuer, expiry := fetchSSLCertificate(ip)
+	serverTbl.AddRow(
 		ip,
 		fmt.Sprintf("%v", data["country"]),
 		fmt.Sprintf("%v", data["region"]),
@@ -105,14 +117,16 @@ func geolocateIP(ip string, ipTbl table.Table) {
 		openPorts[443],
 		openPorts[22],
 		openPorts[115],
+		issuer,
+		expiry,
 	)
+
+	// log.Printf("Scanned %s - Ports: HTTP:%s, HTTPS:%s, SSH:%s, SFTP:%s, SSL Issuer: %s, Expiry: %s",
+	// 	ip, openPorts[80], openPorts[443], openPorts[22], openPorts[115], issuer, expiry)
 }
 
 func fetchDNSRecords(host string) table.Table {
-	tbl := table.New(
-		"[CNAME]",
-		"[NS Records]",
-	)
+	tbl := table.New("[CNAME]", "[NS Records]")
 
 	var cnameStr, nsStr string
 
@@ -133,6 +147,7 @@ func fetchDNSRecords(host string) table.Table {
 	}
 
 	tbl.AddRow(cnameStr, nsStr)
+	// log.Printf("DNS Records for %s - CNAME: %s, NS: %s", host, cnameStr, nsStr)
 	return tbl
 }
 
@@ -150,5 +165,26 @@ func scanOpenPorts(host string) map[int]string {
 			conn.Close()
 		}
 	}
+
 	return result
+}
+
+func fetchSSLCertificate(host string) (string, string) {
+	// Define TLS configuration to skip verification for IP addresses
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: net.ParseIP(host) != nil, // Skip verification only if it's an IP
+	}
+
+	conn, err := tls.Dial("tcp", fmt.Sprintf("%s:443", host), tlsConfig)
+	if err != nil {
+		logger.Printf("Error fetching SSL Certificate for host %s: %v", host, err)
+		return "N/A", "N/A"
+	}
+	defer conn.Close()
+
+	cert := conn.ConnectionState().PeerCertificates[0]
+	issuer := cert.Issuer.CommonName
+	expiry := cert.NotAfter.Format("2006-01-02 15:04:05")
+
+	return issuer, expiry
 }
