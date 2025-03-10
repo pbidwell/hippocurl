@@ -5,6 +5,7 @@ type ContextKey string
 
 const (
 	LoggerKey         ContextKey = "logger"
+	LogFilePath       ContextKey = "logfilepath"
 	ConfigKey         ContextKey = "config"
 	ConfigFilePathKey ContextKey = "configfilepath"
 )

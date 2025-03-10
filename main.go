@@ -36,15 +36,13 @@ func main() {
 		Long:  "HippoCurl (hc) is a command-line tool for exploring and interacting with HTTP services.",
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
-				fmt.Println("===================================")
-				fmt.Println("         HIPPOCURL (hc)           ")
-				fmt.Println("===================================")
-				fmt.Println("A modular command-line tool for exploring and interacting with HTTP services.")
-				fmt.Println("\nAvailable Modules:")
+				utils.PrintTitle()
+				utils.Print("A modular command-line tool for exploring and interacting with HTTP services.", utils.NormalText)
+				utils.Print("Available Modules", utils.Header1)
 				for _, module := range registeredModules {
-					fmt.Printf("%s %s - %s\n", module.Logo(), module.Name(), module.Description())
+					utils.Print(fmt.Sprintf("%s %s - %s", module.Logo(), module.Name(), module.Description()), utils.NormalText)
 				}
-				fmt.Println("\nUsage: hc <module> [arguments]")
+				utils.Print("\nUsage: hc <module> [arguments]\n", utils.NormalText)
 				return
 			}
 
@@ -64,6 +62,8 @@ func main() {
 
 	registeredModules = append(registeredModules, modules.ExploreModule{})
 	registeredModules = append(registeredModules, modules.APIModule{})
+	registeredModules = append(registeredModules, modules.LogModule{})
+	registeredModules = append(registeredModules, modules.ConfigModule{})
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Printf("Error: %v\n", err)
@@ -94,6 +94,7 @@ func loadLoggingIntoContext(ctx context.Context) context.Context {
 
 		// Store logger and config in context
 		ctx = context.WithValue(ctx, utils.LoggerKey, logger)
+		ctx = context.WithValue(ctx, utils.LogFilePath, logFilePath)
 	}
 	return ctx
 }

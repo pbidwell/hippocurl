@@ -28,8 +28,10 @@ func (e ExploreModule) Description() string {
 }
 
 func (e ExploreModule) Execute(ctx context.Context, args []string) {
+	utils.Print(e.Name(), utils.ModuleTitle)
+
 	if len(args) != 1 {
-		fmt.Println("Usage: hc explore [hostname/IP]")
+		utils.Print("Usage: hc explore [hostname/IP]\n", utils.NormalText)
 		return
 	}
 	host := args[0]
@@ -46,9 +48,7 @@ func explore(host string) {
 	spinner := spinner.New(spinner.CharSets[35], 100*time.Millisecond)
 
 	// Fetch DNS records
-	fmt.Println("\n=======================")
-	fmt.Println("      DNS RECORDS ")
-	fmt.Println("=======================")
+	utils.Print("DNS Records", utils.Header1)
 	spinner.Start()
 	dnsTable := fetchDNSRecords(host)
 	spinner.Stop()
@@ -62,13 +62,11 @@ func explore(host string) {
 		}
 	}
 	if err != nil {
-		fmt.Printf("Error resolving host: %v\n", err)
+		logger.Printf("Error resolving host: %v\n", err)
 		return
 	}
 
-	fmt.Println("\n=======================")
-	fmt.Println("      SERVER SCANS ")
-	fmt.Println("=======================")
+	utils.Print("Server Scans", utils.Header1)
 	spinner.Start()
 	serverTbl := table.New(
 		"[IP Address]",

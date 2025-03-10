@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/manifoldco/promptui"
 )
 
@@ -27,9 +28,10 @@ func (a APIModule) Description() string {
 }
 
 func (a APIModule) Execute(ctx context.Context, args []string) {
+	utils.Print(a.Name(), utils.ModuleTitle)
 	config, ok := ctx.Value(utils.ConfigKey).(*utils.Config)
 	if !ok || len(config.Services) == 0 {
-		fmt.Println("No services configured. Please check your configuration file.")
+		utils.Print("No services configured. Please check your configuration file.", utils.NormalText)
 		return
 	}
 
@@ -44,21 +46,25 @@ func (a APIModule) Execute(ctx context.Context, args []string) {
 		envName = args[2]
 	}
 
-	service, route, env := getServiceDetails(config, serviceName, routeName, envName)
+	service, route, env, interactive := getServiceDetails(config, serviceName, routeName, envName)
 	if service == nil || route == nil || env == nil {
-		fmt.Println("Invalid selection.")
+		utils.Print("Invalid selection.", utils.NormalText)
 		return
 	}
 
 	url := env.BaseURL + route.Path
-	performHTTPRequest(url, route.Method, "")
+	performHTTPRequest(url, route.Method, env.Headers, route.Body)
+	if interactive {
+		utils.Print(fmt.Sprintf("Use \"hc %s %s %s %s\" to re-try this API call.", a.Name(), service.Name, route.Name, env.Name), utils.Hint)
+	}
 }
 
 func (e APIModule) Logo() string {
 	return "📤"
 }
 
-func performHTTPRequest(url, method, body string) {
+func performHTTPRequest(url string, method string, headers map[string]string, body string) {
+	spinner := spinner.New(spinner.CharSets[35], 100*time.Millisecond)
 	var reqBody *bytes.Reader
 	if body != "" {
 		reqBody = bytes.NewReader([]byte(body))
@@ -72,8 +78,27 @@ func performHTTPRequest(url, method, body string) {
 		return
 	}
 
+	// Add headers to the request
+	for key, value := range headers {
+		req.Header.Set(key, value)
+	}
+
+	utils.Print("HTTP Request", utils.Header1)
+	utils.Print("Headers", utils.Header2)
+	utils.PrintHeaders(req.Header)
+	utils.Print("Body", utils.Header2)
+	reqBodyBytes, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		logger.Printf("Error parsing request body: %v\n", err)
+		fmt.Printf("Error parsing request body: %v\n", err)
+		return
+	}
+	printFormattedResponse(reqBodyBytes, req.Header.Get("Content-Type"))
+	spinner.Start()
+
 	client := &http.Client{Timeout: 5 * time.Second}
 	resp, err := client.Do(req)
+	spinner.Stop()
 	if err != nil {
 		fmt.Printf("Error making request: %v\n", err)
 		return
@@ -86,18 +111,19 @@ func performHTTPRequest(url, method, body string) {
 		return
 	}
 
-	fmt.Println("\n=======================")
-	fmt.Println("    HTTP RESPONSE    ")
-	fmt.Println("=======================")
-	fmt.Printf("Status: %s\n", resp.Status)
-	fmt.Printf("Headers: %v\n", resp.Header)
-	fmt.Println("Body (Raw Response):")
+	utils.Print("HTTP Response", utils.Header1)
+	utils.Print("Status", utils.Header2)
+	fmt.Println(resp.Status)
+	utils.Print("Headers", utils.Header2)
+	utils.PrintHeaders(resp.Header)
+	utils.Print("Body", utils.Header2)
 	printFormattedResponse(bodyBytes, resp.Header.Get("Content-Type"))
 }
 
-func getServiceDetails(config *utils.Config, serviceName, routeName, envName string) (*utils.Service, *utils.Route, *utils.Environment) {
+func getServiceDetails(config *utils.Config, serviceName, routeName, envName string) (*utils.Service, *utils.Route, *utils.Environment, bool) {
 	if serviceName == "" || routeName == "" || envName == "" {
-		return promptUserForServiceDetails(config)
+		service, route, env := promptUserForServiceDetails(config)
+		return service, route, env, true
 	}
 
 	for _, service := range config.Services {
@@ -106,14 +132,14 @@ func getServiceDetails(config *utils.Config, serviceName, routeName, envName str
 				if route.Name == routeName {
 					for _, env := range service.Environments {
 						if env.Name == envName {
-							return &service, &route, &env
+							return &service, &route, &env, false
 						}
 					}
 				}
 			}
 		}
 	}
-	return nil, nil, nil
+	return nil, nil, nil, false
 }
 
 func promptUserForServiceDetails(config *utils.Config) (*utils.Service, *utils.Route, *utils.Environment) {
@@ -123,7 +149,7 @@ func promptUserForServiceDetails(config *utils.Config) (*utils.Service, *utils.R
 	}
 	_, serviceName, err := servicePrompt.Run()
 	if err != nil {
-		fmt.Println("Selection cancelled.")
+		utils.Print("Selection cancelled.", utils.NormalText)
 		return nil, nil, nil
 	}
 
@@ -135,7 +161,7 @@ func promptUserForServiceDetails(config *utils.Config) (*utils.Service, *utils.R
 	}
 	_, routeName, err := routePrompt.Run()
 	if err != nil {
-		fmt.Println("Selection cancelled.")
+		utils.Print("Selection cancelled.", utils.NormalText)
 		return nil, nil, nil
 	}
 
@@ -147,7 +173,7 @@ func promptUserForServiceDetails(config *utils.Config) (*utils.Service, *utils.R
 	}
 	_, envName, err := envPrompt.Run()
 	if err != nil {
-		fmt.Println("Selection cancelled.")
+		utils.Print("Selection cancelled.", utils.NormalText)
 		return nil, nil, nil
 	}
 
@@ -161,20 +187,21 @@ func printFormattedResponse(body []byte, contentType string) {
 		var prettyJSON bytes.Buffer
 		err := json.Indent(&prettyJSON, body, "", "  ")
 		if err == nil {
-			fmt.Println(prettyJSON.String())
+			utils.Print(prettyJSON.String(), utils.NormalText)
 		} else {
-			fmt.Println(string(body))
+			utils.Print(string(body), utils.NormalText)
 		}
 	case strings.Contains(contentType, "xml"):
+	case strings.Contains(contentType, "html"):
 		var prettyXML []byte
 		err := xml.Unmarshal(body, &prettyXML) // Unmarshal XML first
 		if err == nil {
 			formattedXML, _ := xml.MarshalIndent(prettyXML, "", "  ")
-			fmt.Println(string(formattedXML))
+			utils.Print(string(formattedXML), utils.NormalText)
 		} else {
-			fmt.Println(string(body))
+			utils.Print(string(body), utils.NormalText)
 		}
 	default:
-		fmt.Println(string(body))
+		utils.Print(string(body), utils.NormalText)
 	}
 }

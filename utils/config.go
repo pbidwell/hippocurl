@@ -27,9 +27,10 @@ type Service struct {
 }
 
 type Environment struct {
-	Name    string `yaml:"name"`
-	BaseURL string `yaml:"base_url"`
-	Auth    Auth   `yaml:"auth"`
+	Name    string            `yaml:"name"`
+	BaseURL string            `yaml:"base_url"`
+	Auth    Auth              `yaml:"auth"`
+	Headers map[string]string `yaml:"headers,omitempty"` // Custom headers
 }
 
 type Auth struct {
@@ -41,9 +42,10 @@ type Auth struct {
 
 type Route struct {
 	Name        string `yaml:"name"`
-	Path        string `yaml:"path"`
-	Method      string `yaml:"method"`
 	Description string `yaml:"description"`
+	Method      string `yaml:"method"`
+	Path        string `yaml:"path"`
+	Body        string `yaml:"body"`
 }
 
 // LoadConfig reads the YAML configuration file and stores it in the context
