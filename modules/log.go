@@ -19,6 +19,10 @@ func (l LogModule) Description() string {
 	return "Displays the location of the log file and the last 20 lines."
 }
 
+func (l LogModule) Use() string {
+	return l.Name()
+}
+
 func (l LogModule) Execute(ctx context.Context, args []string) {
 	logFilePath, ok := ctx.Value(utils.LogFilePath).(string)
 	if !ok {

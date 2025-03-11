@@ -18,6 +18,10 @@ func (l ConfigModule) Description() string {
 	return "Displays the location of the config file and the contents (up to 100 lines)."
 }
 
+func (l ConfigModule) Use() string {
+	return l.Name()
+}
+
 func (l ConfigModule) Execute(ctx context.Context, args []string) {
 	configFilePath, ok := ctx.Value(utils.ConfigFilePathKey).(string)
 	if !ok {

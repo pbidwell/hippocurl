@@ -27,6 +27,10 @@ func (e ExploreModule) Description() string {
 	return "Profiles a given hostname or IP address, fetching DNS records, geolocation, and port scan data."
 }
 
+func (e ExploreModule) Use() string {
+	return fmt.Sprintf("%s <hostname>", e.Name())
+}
+
 func (e ExploreModule) Execute(ctx context.Context, args []string) {
 	utils.Print(e.Name(), utils.ModuleTitle)
 

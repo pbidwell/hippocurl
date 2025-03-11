@@ -27,7 +27,11 @@ func (a APIModule) Name() string {
 }
 
 func (a APIModule) Description() string {
-	return "Performs HTTP requests."
+	return "Performs HTTP requests to services defined in the config file. Enters interactive mode if no arguments are specified."
+}
+
+func (a APIModule) Use() string {
+	return fmt.Sprintf("%s [<serviceName> <routeName> <environmentName>]", a.Name())
 }
 
 func (a APIModule) Execute(ctx context.Context, args []string) {
@@ -91,6 +95,8 @@ func performHTTPRequest(url string, method string, headers map[string]string, bo
 	}
 
 	utils.Print("HTTP Request", utils.Header1)
+	utils.Print("URL", utils.Header2)
+	utils.Print(url, utils.NormalText)
 	utils.Print("Headers", utils.Header2)
 	utils.PrintHeaders(req.Header)
 	utils.Print("Body", utils.Header2)

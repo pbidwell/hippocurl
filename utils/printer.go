@@ -49,6 +49,11 @@ func PrintTitle() {
 `)
 }
 
+func PrintFieldValuePair(field string, value string) {
+	color.New(color.FgBlack, color.Bold).Printf("\n%s: ", field)
+	Print(value, NormalText)
+}
+
 // PrintHeaders prints key-value pairs from a map where values are arrays, consolidating them into a space-delimited string
 // and ensuring the keys are printed in alphabetical order
 func PrintHeaders(data map[string][]string) {

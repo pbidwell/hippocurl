@@ -19,6 +19,55 @@ Stay tuned for updates! 🚀
 
 In the meantime, feel free to explore the existing modules and contribute to the project.  
 
+## Installation
+
+### **Using Prebuilt Binaries**
+You can download the latest version of HippoCurl from the [Releases](https://github.com/pbidwell/hippocurl/releases) page.
+
+1. **Download the appropriate binary** for your operating system:
+   - **Linux**: `hippocurl-linux-amd64`
+   - **macOS**: `hippocurl-mac-amd64`
+   - **Windows**: `hippocurl-windows-amd64.exe`
+2. **Make it executable (Linux/macOS)**:
+   ```sh
+   chmod +x hippocurl-linux-amd64
+   ```
+3. **Move it to a directory in your PATH**:
+   ```sh
+   sudo mv hippocurl-linux-amd64 /usr/local/bin/hc
+   ```
+4. **Run HippoCurl**:
+   ```sh
+   hc
+   ```
+
+### **Building from Source**
+If you prefer, you can build HippoCurl from source.
+
+1. **Clone the repository**:
+   ```sh
+   git clone https://github.com/yourusername/hippocurl.git
+   cd hippocurl
+   ```
+2. **Ensure you have Go installed** (version 1.20+):
+   ```sh
+   go version
+   ```
+3. **Build the binary**:
+   ```sh
+   go build -o hc ./cmd/main.go
+   ```
+4. **Move it to your PATH** (optional):
+   ```sh
+   sudo mv hc /usr/local/bin/
+   ```
+5. **Verify installation**:
+   ```sh
+   hc
+   ```
+
+---
+
 ## Usage
 
 HippoCurl (`hc`) is a command-line tool designed to simplify HTTP requests, API interactions, and service explorations.
@@ -91,6 +140,45 @@ HippoCurl uses a YAML-based configuration to define services, environments, rout
 
 Modify this file to add new API services, routes, authentication methods, and custom headers.
 
+#### Example Configuration
+
+```yaml
+services:
+  - name: "User Service"
+    environments:
+      - name: "Development"
+        base_url: "https://dev.api.example.com/user"
+        auth:
+          type: "bearer"
+          token: "dev-secret-token"
+        headers:
+          Content-Type: "application/json"
+          Authorization: "Bearer dev-secret-token"
+      - name: "Production"
+        base_url: "https://api.example.com/user"
+        auth:
+          type: "basic"
+          username: "admin"
+          password: "securepassword"
+        headers:
+          Content-Type: "application/json"
+    routes:
+      - name: "Get User"
+        path: "/{id}"
+        method: "GET"
+        description: "Fetch user details by ID"
+      - name: "Create User"
+        description: "Create a new user"
+        path: "/create"
+        method: "POST"
+        body: |
+            {
+                "name": "John Doe",
+                "email": "johndoe@example.com",
+                "favoriteanimal": "hippo"
+            }
+```
+
 ---
 
 ## Feature Ideas
@@ -139,4 +227,5 @@ Modify this file to add new API services, routes, authentication methods, and cu
 - [x] Consistent, color-coded output for better readability across modules
 - [x] Easily-accessible log-viewing mode
 - [ ] Interactive mode for easier configuration
+- [ ] Config validation (no spaces in names, valid URLs, etc)
 
