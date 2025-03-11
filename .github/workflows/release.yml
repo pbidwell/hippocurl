@@ -1,0 +1,32 @@
+name: Build and Release HippoCurl
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.20
+
+      - name: Build Executables
+        run: |
+          mkdir -p dist
+          GOOS=linux GOARCH=amd64 go build -o dist/hippocurl-linux-amd64
+          GOOS=darwin GOARCH=amd64 go build -o dist/hippocurl-mac-amd64
+          GOOS=windows GOARCH=amd64 go build -o dist/hippocurl-windows-amd64.exe
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
