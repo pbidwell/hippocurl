@@ -24,12 +24,12 @@ In the meantime, feel free to explore the existing modules and contribute to the
 ### Core Features
 - [x] Modular design allowing easy extension
 - [x] CLI-based utility with structured output
-- [x] Configuration file support (`.hcconfig` for default settings)
+- [x] Configuration file support (`.hcconfig`)
 - [ ] Configuration wizard support as new module + curl command converter
 
 ### HTTP Features
 - [x] Perform HTTP requests (GET, POST, etc.)
-- [ ] Support for custom headers & request bodies
+- [x] Support for custom headers & request bodies
 - [ ] Response time measurement
 - [x] Pretty-print JSON API responses
 
@@ -62,7 +62,7 @@ In the meantime, feel free to explore the existing modules and contribute to the
 ### Utility & UX Enhancements
 - [x] Interactive spinner for long-running tasks
 - [ ] Auto-complete for module names
-- [ ] Consistent, color-coded output for better readability across modules
-- [ ] Verbose/debug mode for troubleshooting
+- [x] Consistent, color-coded output for better readability across modules
+- [x] Easily-accessible log-viewing mode
 - [ ] Interactive mode for easier configuration
 
