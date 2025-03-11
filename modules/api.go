@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"hippocurl/utils"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -19,6 +20,8 @@ import (
 // APIModule implements the HippoModule interface
 type APIModule struct{}
 
+var alogger *log.Logger
+
 func (a APIModule) Name() string {
 	return "api"
 }
@@ -28,12 +31,16 @@ func (a APIModule) Description() string {
 }
 
 func (a APIModule) Execute(ctx context.Context, args []string) {
+	// Module banner
 	utils.Print(a.Name(), utils.ModuleTitle)
+
 	config, ok := ctx.Value(utils.ConfigKey).(*utils.Config)
 	if !ok || len(config.Services) == 0 {
 		utils.Print("No services configured. Please check your configuration file.", utils.NormalText)
 		return
 	}
+
+	alogger = ctx.Value(utils.LoggerKey).(*log.Logger)
 
 	var serviceName, routeName, envName string
 	if len(args) > 0 {
@@ -89,7 +96,7 @@ func performHTTPRequest(url string, method string, headers map[string]string, bo
 	utils.Print("Body", utils.Header2)
 	reqBodyBytes, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		logger.Printf("Error parsing request body: %v\n", err)
+		alogger.Printf("Error parsing request body: %v\n", err)
 		fmt.Printf("Error parsing request body: %v\n", err)
 		return
 	}
@@ -121,25 +128,42 @@ func performHTTPRequest(url string, method string, headers map[string]string, bo
 }
 
 func getServiceDetails(config *utils.Config, serviceName, routeName, envName string) (*utils.Service, *utils.Route, *utils.Environment, bool) {
+	serviceMap := make(map[string]*utils.Service)
+	for i := range config.Services {
+		serviceMap[config.Services[i].Name] = &config.Services[i]
+	}
+
 	if serviceName == "" || routeName == "" || envName == "" {
 		service, route, env := promptUserForServiceDetails(config)
 		return service, route, env, true
 	}
 
-	for _, service := range config.Services {
-		if service.Name == serviceName {
-			for _, route := range service.Routes {
-				if route.Name == routeName {
-					for _, env := range service.Environments {
-						if env.Name == envName {
-							return &service, &route, &env, false
-						}
-					}
-				}
-			}
-		}
+	service, exists := serviceMap[serviceName]
+	if !exists {
+		return nil, nil, nil, false
 	}
-	return nil, nil, nil, false
+
+	routeMap := make(map[string]*utils.Route)
+	for i := range service.Routes {
+		routeMap[service.Routes[i].Name] = &service.Routes[i]
+	}
+
+	route, exists := routeMap[routeName]
+	if !exists {
+		return nil, nil, nil, false
+	}
+
+	envMap := make(map[string]*utils.Environment)
+	for i := range service.Environments {
+		envMap[service.Environments[i].Name] = &service.Environments[i]
+	}
+
+	env, exists := envMap[envName]
+	if !exists {
+		return nil, nil, nil, false
+	}
+
+	return service, route, env, false
 }
 
 func promptUserForServiceDetails(config *utils.Config) (*utils.Service, *utils.Route, *utils.Environment) {

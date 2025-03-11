@@ -16,7 +16,7 @@ var registeredModules []modules.HippoModule
 var logger *log.Logger
 
 func main() {
-	ctx := utils.LoadLoggingIntoContext(context.Background())
+	ctx := utils.LoadLoggerIntoContext(context.Background())
 	ctx = utils.LoadConfig(ctx)
 
 	logger = ctx.Value(utils.LoggerKey).(*log.Logger)

@@ -17,7 +17,7 @@ import (
 
 type ExploreModule struct{}
 
-var logger *log.Logger
+var elogger *log.Logger
 
 func (e ExploreModule) Name() string {
 	return "explore"
@@ -35,7 +35,7 @@ func (e ExploreModule) Execute(ctx context.Context, args []string) {
 		return
 	}
 	host := args[0]
-	logger = ctx.Value(utils.LoggerKey).(*log.Logger)
+	elogger = ctx.Value(utils.LoggerKey).(*log.Logger)
 
 	explore(host)
 }
@@ -62,7 +62,7 @@ func explore(host string) {
 		}
 	}
 	if err != nil {
-		logger.Printf("Error resolving host: %v\n", err)
+		elogger.Printf("Error resolving host: %v\n", err)
 		return
 	}
 
@@ -175,7 +175,7 @@ func fetchSSLCertificate(host string) (string, string) {
 
 	conn, err := tls.Dial("tcp", fmt.Sprintf("%s:443", host), tlsConfig)
 	if err != nil {
-		logger.Printf("Error fetching SSL Certificate for host %s: %v", host, err)
+		elogger.Printf("Error fetching SSL Certificate for host %s: %v", host, err)
 		return "N/A", "N/A"
 	}
 	defer conn.Close()

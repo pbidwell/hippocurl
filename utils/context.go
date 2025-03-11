@@ -21,7 +21,7 @@ const (
 	HC_LOG_FILE   = "hc.log"
 )
 
-func LoadLoggingIntoContext(ctx context.Context) context.Context {
+func LoadLoggerIntoContext(ctx context.Context) context.Context {
 	// Expand home directory if necessary
 	homeDir, err := os.UserHomeDir()
 	if err == nil {

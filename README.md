@@ -19,6 +19,80 @@ Stay tuned for updates! 🚀
 
 In the meantime, feel free to explore the existing modules and contribute to the project.  
 
+## Usage
+
+HippoCurl (`hc`) is a command-line tool designed to simplify HTTP requests, API interactions, and service explorations.
+
+### Basic Command Structure
+
+```
+hc <module> [arguments]
+```
+
+- `<module>`: The name of the module you wish to execute (e.g., `api`, `explore`, `log`).
+- `[arguments]`: Optional parameters that vary by module.
+
+### API Requests
+
+To make an API request using a configured service:
+
+```
+hc api <service> <route> <environment>
+```
+
+If any of the parameters are omitted, HippoCurl will interactively prompt you to select the desired service, route, and environment.
+
+Example:
+
+```
+hc api UserService GetUser Development
+```
+
+This will:
+- Fetch the `GetUser` route from the `UserService` in the `Development` environment.
+- Use the configured base URL, headers, and authentication.
+- Display the response in a structured format.
+
+### Exploring Hosts
+
+```
+hc explore <hostname or IP>
+```
+
+Example:
+
+```
+hc explore example.com
+```
+
+This will:
+- Resolve DNS records.
+- Retrieve IP-based geolocation.
+- Perform common port scans.
+- Detect SSL/TLS certificate details.
+
+### Viewing Logs
+
+```
+hc log
+```
+
+This command displays:
+- The location of the log file.
+- The last 100 lines of logs.
+
+### Configuration
+
+HippoCurl uses a YAML-based configuration to define services, environments, routes, and authentication details. See the `hc_config.yml` file for customization.
+
+```
+~/.hcconfig/hc_config.yml
+```
+
+Modify this file to add new API services, routes, authentication methods, and custom headers.
+
+---
+
 ## Feature Ideas
 
 ### Core Features
