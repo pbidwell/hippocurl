@@ -1,0 +1,16 @@
+services:
+  - name: ServiceOne
+    environments:
+      - name: NameOne
+        base_url: BaseURLOne
+        auth:
+          type: AuthTypeOne
+          username: AuthUsernameOne
+          password: AuthPasswordOne
+          token: AuthTokenOne
+        headers: {}
+    routes:
+      - name: RouteNameOne
+        description: RouteDescriptionOne
+        method: RouteMethodOne
+        body: RouteBodyOne

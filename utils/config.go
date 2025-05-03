@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -48,100 +47,113 @@ type Route struct {
 	Body        string `yaml:"body"`
 }
 
-// LoadConfig reads the YAML configuration file and stores it in the context
-func LoadConfig(ctx context.Context) context.Context {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		fmt.Printf("failed to get user home directory: %v", err)
-		os.Exit(1)
+// Represents config elements with Name fields
+type Named interface {
+	GetName() string
+}
+
+// Allows adherence to the Named interface
+func (s Service) GetName() string     { return s.Name }
+func (r Route) GetName() string       { return r.Name }
+func (e Environment) GetName() string { return e.Name }
+
+// getNames acts as a generic helper function to avoid
+// duplicate code on "get<ENTITY>Names()" calls
+func getNames[T Named](items []T) []string {
+	names := make([]string, len(items))
+	for i, item := range items {
+		names[i] = item.GetName()
 	}
+	return names
+}
 
-	configDir := filepath.Join(homeDir, HC_CONFIG_DIR_NAME)
-	configFilePath := filepath.Join(configDir, HC_CONFIG_FILE)
-
-	// Ensure the config directory exists
-	if err := os.MkdirAll(configDir, 0755); err != nil {
-		fmt.Printf("failed to create config directory: %v", err)
-		os.Exit(1)
-	}
-
-	// Check if the config file exists, if not, create an empty config file
-	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
-		defaultConfig := &Config{Services: []Service{}}
-		data, _ := yaml.Marshal(defaultConfig)
-		if err := ioutil.WriteFile(configFilePath, data, 0644); err != nil {
-			fmt.Printf("failed to create default config file: %v", err)
-			os.Exit(1)
+// getNames acts as a generic helper function to avoid
+// duplicate code on "get<ENTITY>ByName()" calls
+func getByName[T Named](items []T, name string) *T {
+	for i := range items {
+		if items[i].GetName() == name {
+			return &items[i]
 		}
 	}
+	return nil
+}
 
+func (c *Config) GetServiceNames() []string {
+	return getNames(c.Services)
+}
+
+func (c *Config) GetServiceByName(name string) *Service {
+	return getByName(c.Services, name)
+}
+
+func (s *Service) GetRouteNames() []string {
+	return getNames(s.Routes)
+}
+
+func (s *Service) GetRouteByName(name string) *Route {
+	return getByName(s.Routes, name)
+}
+
+func (s *Service) GetEnvironmentNames() []string {
+	return getNames(s.Environments)
+}
+
+func (s *Service) GetEnvironmentByName(name string) *Environment {
+	return getByName(s.Environments, name)
+}
+
+func loadConfigFromFilepath(path string) (*Config, error) {
 	// Read the config file
-	data, err := ioutil.ReadFile(configFilePath)
+	data, err := os.ReadFile(path)
 	if err != nil {
-		fmt.Printf("failed to read config file: %v", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("failed to read config file: %v", err)
+	}
+
+	if len(data) == 0 {
+		return nil, fmt.Errorf("config file at %s is empty", path)
 	}
 
 	// Unmarshal the YAML data into the Config struct
 	var config Config
 	if err := yaml.Unmarshal(data, &config); err != nil {
-		fmt.Printf("failed to parse config file: %v", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("failed to parse config file: %v", err)
 	}
 
-	// Store config in context
-	ctx = context.WithValue(ctx, ConfigKey, &config)
+	return &config, nil
+}
+
+// LoadConfigIntoContext reads the YAML configuration file and stores it in the context
+func LoadConfigIntoContext(ctx context.Context) (context.Context, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return ctx, fmt.Errorf("failed to get user home directory: %w", err)
+	}
+
+	configDir := filepath.Join(homeDir, HC_CONFIG_DIR_NAME)
+	configFilePath := filepath.Join(configDir, HC_CONFIG_FILE)
+
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		return ctx, fmt.Errorf("failed to create config directory %s: %w", configDir, err)
+	}
+
+	// Create default config if missing
+	if _, err := os.Stat(configFilePath); os.IsNotExist(err) {
+		defaultConfig := &Config{Services: []Service{}}
+		data, err := yaml.Marshal(defaultConfig)
+		if err != nil {
+			return ctx, fmt.Errorf("failed to marshal default config: %w", err)
+		}
+		if err := os.WriteFile(configFilePath, data, 0644); err != nil {
+			return ctx, fmt.Errorf("failed to write default config to %s: %w", configFilePath, err)
+		}
+	}
+
+	config, err := loadConfigFromFilepath(configFilePath)
+	if err != nil {
+		return ctx, fmt.Errorf("failed to load config from %s: %w", configFilePath, err)
+	}
+
+	ctx = context.WithValue(ctx, ConfigKey, config)
 	ctx = context.WithValue(ctx, ConfigFilePathKey, configFilePath)
-	return ctx
-}
-
-func (c Config) GetServiceNames() []string {
-	var names []string
-	for _, service := range c.Services {
-		names = append(names, service.Name)
-	}
-	return names
-}
-
-func (c Config) GetServiceByName(name string) *Service {
-	for _, service := range c.Services {
-		if service.Name == name {
-			return &service
-		}
-	}
-	return nil
-}
-
-func (s Service) GetRouteNames() []string {
-	var names []string
-	for _, route := range s.Routes {
-		names = append(names, route.Name)
-	}
-	return names
-}
-
-func (s Service) GetRouteByName(name string) *Route {
-	for _, route := range s.Routes {
-		if route.Name == name {
-			return &route
-		}
-	}
-	return nil
-}
-
-func (s Service) GetEnvironmentNames() []string {
-	var names []string
-	for _, env := range s.Environments {
-		names = append(names, env.Name)
-	}
-	return names
-}
-
-func (s Service) GetEnvironmentByName(name string) *Environment {
-	for _, env := range s.Environments {
-		if env.Name == name {
-			return &env
-		}
-	}
-	return nil
+	return ctx, nil
 }

@@ -132,7 +132,7 @@ This command displays:
 
 ### Configuration
 
-HippoCurl uses a YAML-based configuration to define services, environments, routes, and authentication details. See the `hc_config.yml` file for customization.
+HippoCurl uses a YAML-based configuration to define services, environments, routes, and authentication details. See the `hc_config_sample.yml` file for customization.
 
 ```
 ~/.hcconfig/hc_config.yml
@@ -144,39 +144,59 @@ Modify this file to add new API services, routes, authentication methods, and cu
 
 ```yaml
 services:
-  - name: "User Service"
+  - name: GitHubAPI
     environments:
-      - name: "Development"
-        base_url: "https://dev.api.example.com/user"
+      - name: production
+        base_url: "https://api.github.com"
         auth:
           type: "bearer"
-          token: "dev-secret-token"
+          token: "ghp_yourGithubTokenHere"
         headers:
-          Content-Type: "application/json"
-          Authorization: "Bearer dev-secret-token"
-      - name: "Production"
-        base_url: "https://api.example.com/user"
-        auth:
-          type: "basic"
-          username: "admin"
-          password: "securepassword"
-        headers:
-          Content-Type: "application/json"
+          Accept: "application/vnd.github.v3+json"
+          User-Agent: "HippoCurl/1.0"
+
     routes:
-      - name: "Get User"
-        path: "/{id}"
-        method: "GET"
-        description: "Fetch user details by ID"
-      - name: "Create User"
-        description: "Create a new user"
-        path: "/create"
-        method: "POST"
-        body: |
-            {
-                "name": "John Doe",
-                "email": "johndoe@example.com",
-                "favoriteanimal": "hippo"
-            }
+      - name: get-user
+        description: "Fetch authenticated user info"
+        method: GET
+        path: "/user"
+        body: ""
+
+  - name: HttpBinTest
+    environments:
+      - name: default
+        base_url: "https://httpbin.org"
+        auth:
+          type: "none"
+        headers:
+          Content-Type: "application/json"
+
+    routes:
+      - name: post-json
+        description: "POST JSON test payload"
+        method: POST
+        path: "/post"
+        body: '{"hippo": "rules"}'
+
+      - name: get-ip
+        description: "Get your IP address"
+        method: GET
+        path: "/ip"
+        body: ""
+
+  - name: DuckDuckGo
+    environments:
+      - name: default
+        base_url: "https://duckduckgo.com"
+        auth:
+          type: "none"
+
+    routes:
+      - name: homepage
+        description: "Fetch DuckDuckGo homepage"
+        method: GET
+        path: "/"
+        body: ""
 ```
 
 ---
@@ -203,12 +223,6 @@ services:
 - [ ] Reverse DNS lookup
 - [ ] Detect potential security risks in API responses
 - [ ] Whois lookup for domains
-
-### AI-Powered Enhancements
-- [ ] AI-based API response summarization
-- [ ] AI-powered content classification (Success, Error, Warning)
-- [ ] Detect security vulnerabilities using AI
-- [ ] NLP-based query support (e.g., `"Check status of example.com"`)
 
 ### Performance & Monitoring
 - [ ] HTTP request benchmarking (track response times over multiple requests)

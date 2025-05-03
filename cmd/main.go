@@ -12,27 +12,34 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var registeredModules []modules.HippoModule
-var logger *log.Logger
+var (
+	registeredModules []modules.HippoModule
+	logger            *log.Logger
+)
 
 var version = "dev" // Default to "dev" if not set at build time
 
 func main() {
-	ctx := utils.LoadLoggerIntoContext(context.Background())
-	ctx = utils.LoadConfig(ctx)
+	var ctx context.Context
 
+	ctx = utils.LoadLoggerIntoContext(context.Background())
 	logger = ctx.Value(utils.LoggerKey).(*log.Logger)
 	logger.Println("==== HippoCurl Started ====")
 	defer logger.Println("==== HippoCurl Terminated ====")
 
-	var rootCmd = &cobra.Command{
+	ctx, err := utils.LoadConfigIntoContext(ctx)
+	if err != nil {
+		log.Fatalf("error initializing config: %v", err)
+	}
+
+	rootCmd := &cobra.Command{
 		Use:   "hc",
 		Short: "HippoCurl - A modular HTTP utility",
 		Long:  "HippoCurl (hc) is a command-line tool for exploring and interacting with HTTP and other web services.",
 	}
 
 	// Version command
-	var versionCmd = &cobra.Command{
+	versionCmd := &cobra.Command{
 		Use:   "version",
 		Short: "Display version information",
 		Run: func(cmd *cobra.Command, args []string) {

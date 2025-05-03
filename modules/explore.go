@@ -122,9 +122,6 @@ func geolocateIP(ip string, serverTbl table.Table) {
 		issuer,
 		expiry,
 	)
-
-	// log.Printf("Scanned %s - Ports: HTTP:%s, HTTPS:%s, SSH:%s, SFTP:%s, SSL Issuer: %s, Expiry: %s",
-	// 	ip, openPorts[80], openPorts[443], openPorts[22], openPorts[115], issuer, expiry)
 }
 
 func fetchDNSRecords(host string) table.Table {

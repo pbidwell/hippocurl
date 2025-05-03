@@ -29,7 +29,7 @@ func (l ConfigModule) Execute(ctx context.Context, args []string) {
 		return
 	}
 
-	utils.Print("Config File Location", utils.Header2)
+	utils.Print("Location", utils.Header2)
 	utils.Print(configFilePath, utils.NormalText)
 
 	file, err := os.Open(configFilePath)
@@ -39,7 +39,7 @@ func (l ConfigModule) Execute(ctx context.Context, args []string) {
 	}
 	defer file.Close()
 
-	utils.Print("Config File Contents", utils.Header2)
+	utils.Print("Contents", utils.Header2)
 	lines := readLastLines(file, 100)
 	for _, line := range lines {
 		utils.Print(line, utils.NormalText)

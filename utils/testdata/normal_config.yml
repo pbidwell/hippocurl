@@ -1,0 +1,60 @@
+services:
+  - name: ServiceOne
+    environments:
+      - name: EnvOneA
+        base_url: https://envonea.example.com
+        auth:
+          type: basic
+          username: userA
+          password: passA
+          token: ""
+        headers:
+          X-Header-A: ValueA
+      - name: EnvOneB
+        base_url: https://envoneb.example.com
+        auth:
+          type: bearer
+          username: ""
+          password: ""
+          token: tokenB
+        headers:
+          X-Header-B: ValueB
+    routes:
+      - name: RouteOneA
+        description: First route for ServiceOne
+        method: GET
+        body: ""
+      - name: RouteOneB
+        description: Second route for ServiceOne
+        method: POST
+        body: '{"key":"value"}'
+
+  - name: ServiceTwo
+    environments:
+      - name: EnvTwoA
+        base_url: https://envtwoa.example.com
+        auth:
+          type: basic
+          username: userC
+          password: passC
+          token: ""
+        headers:
+          X-Header-C: ValueC
+      - name: EnvTwoB
+        base_url: https://envtwob.example.com
+        auth:
+          type: bearer
+          username: ""
+          password: ""
+          token: tokenD
+        headers:
+          X-Header-D: ValueD
+    routes:
+      - name: RouteTwoA
+        description: First route for ServiceTwo
+        method: PUT
+        body: '{"update":"true"}'
+      - name: RouteTwoB
+        description: Second route for ServiceTwo
+        method: DELETE
+        body: ""

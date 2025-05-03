@@ -1,0 +1,54 @@
+services:
+  - name: GitHubAPI
+    environments:
+      - name: production
+        base_url: "https://api.github.com"
+        auth:
+          type: "bearer"
+          token: "ghp_yourGithubTokenHere"
+        headers:
+          Accept: "application/vnd.github.v3+json"
+          User-Agent: "HippoCurl/1.0"
+
+    routes:
+      - name: get-user
+        description: "Fetch authenticated user info"
+        method: GET
+        path: "/user"
+        body: ""
+
+  - name: HttpBinTest
+    environments:
+      - name: default
+        base_url: "https://httpbin.org"
+        auth:
+          type: "none"
+        headers:
+          Content-Type: "application/json"
+
+    routes:
+      - name: post-json
+        description: "POST JSON test payload"
+        method: POST
+        path: "/post"
+        body: '{"hippo": "rules"}'
+
+      - name: get-ip
+        description: "Get your IP address"
+        method: GET
+        path: "/ip"
+        body: ""
+
+  - name: DuckDuckGo
+    environments:
+      - name: default
+        base_url: "https://duckduckgo.com"
+        auth:
+          type: "none"
+
+    routes:
+      - name: homepage
+        description: "Fetch DuckDuckGo homepage"
+        method: GET
+        path: "/"
+        body: ""
