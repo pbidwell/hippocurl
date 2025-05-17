@@ -1,7 +1,7 @@
 package modules
 
 import (
-	"hippocurl/internal/config"
+	"github.com/pbidwell/hippocurl/internal/config"
 )
 
 type HippoModule interface {

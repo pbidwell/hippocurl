@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"hippocurl/modules/explore"
+	"github.com/pbidwell/hippocurl/modules/explore"
 
 	"github.com/spf13/cobra"
 )

@@ -3,9 +3,10 @@ package log
 import (
 	"bufio"
 	"fmt"
-	"hippocurl/internal/config"
-	"hippocurl/utils"
 	"os"
+
+	"github.com/pbidwell/hippocurl/internal/config"
+	"github.com/pbidwell/hippocurl/utils"
 )
 
 // LogModule implements the HippoModule interface

@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
-	"hippocurl/internal/config"
-	"hippocurl/utils"
 	"io"
 	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/pbidwell/hippocurl/internal/config"
+	"github.com/pbidwell/hippocurl/utils"
 
 	"github.com/briandowns/spinner"
 	"github.com/manifoldco/promptui"

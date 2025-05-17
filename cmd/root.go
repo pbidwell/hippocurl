@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"fmt"
-	"hippocurl/internal/config"
-	"hippocurl/modules"
-	"hippocurl/utils"
+	"os"
 	"strings"
 
+	"github.com/pbidwell/hippocurl/internal/config"
+	"github.com/pbidwell/hippocurl/modules"
+	"github.com/pbidwell/hippocurl/utils"
+
 	// "log"
-	"os"
 
 	"github.com/spf13/cobra"
 )

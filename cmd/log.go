@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"hippocurl/modules/log"
+	"github.com/pbidwell/hippocurl/modules/log"
 
 	"github.com/spf13/cobra"
 )

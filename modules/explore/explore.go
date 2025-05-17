@@ -4,12 +4,13 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"hippocurl/internal/config"
-	"hippocurl/utils"
 	"log"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/pbidwell/hippocurl/internal/config"
+	"github.com/pbidwell/hippocurl/utils"
 
 	"github.com/briandowns/spinner"
 	"github.com/rodaine/table"
