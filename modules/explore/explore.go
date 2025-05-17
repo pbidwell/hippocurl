@@ -1,10 +1,10 @@
-package modules
+package explore
 
 import (
-	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"hippocurl/internal/config"
 	"hippocurl/utils"
 	"log"
 	"net"
@@ -31,7 +31,7 @@ func (e ExploreModule) Use() string {
 	return fmt.Sprintf("%s <hostname>", e.Name())
 }
 
-func (e ExploreModule) Execute(ctx context.Context, args []string) {
+func (e ExploreModule) Execute(app *config.App, args []string) {
 	utils.Print(e.Name(), utils.ModuleTitle)
 
 	if len(args) != 1 {
@@ -39,7 +39,7 @@ func (e ExploreModule) Execute(ctx context.Context, args []string) {
 		return
 	}
 	host := args[0]
-	elogger = ctx.Value(utils.LoggerKey).(*log.Logger)
+	elogger = app.Logger
 
 	explore(host)
 }
@@ -59,15 +59,15 @@ func explore(host string) {
 	dnsTable.Print()
 
 	ips, err := net.LookupIP(host)
-	filteredIPs := []net.IP{}
-	for _, ip := range ips {
-		if ip.To4() != nil { // Only include IPv4 addresses
-			filteredIPs = append(filteredIPs, ip)
-		}
-	}
 	if err != nil {
 		elogger.Printf("Error resolving host: %v\n", err)
-		return
+	}
+
+	filteredIPs := make([]net.IP, 0, len(ips)) // Pre-allocate capacity
+	for _, ip := range ips {
+		if ip.To4() != nil {
+			filteredIPs = append(filteredIPs, ip)
+		}
 	}
 
 	utils.Print("Server Scans", utils.Header1)

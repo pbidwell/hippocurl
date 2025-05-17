@@ -42,11 +42,19 @@ func Print(text string, level HeadingLevel) {
 }
 
 func PrintTitle() {
-	color.New(color.FgHiBlue, color.Bold).Print(`
-===================================
-	HIPPOCURL (hc)           
-===================================
-`)
+	fmt.Println(GetTitle())
+}
+
+func GetTitle() string {
+	return `
+  _   _ _                    ____           _ 
+ | | | (_)_ __  _ __   ___  / ___|   _ _ __| |
+ | |_| | | '_ \| '_ \ / _ \| |  | | | | '__| |
+ |  _  | | |_) | |_) | (_) | |__| |_| | |  | |
+ |_| |_|_| .__/| .__/ \___/ \____\__,_|_|  |_|
+         |_|   |_|                            
+
+`
 }
 
 func PrintFieldValuePair(field string, value string) {

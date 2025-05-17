@@ -5,7 +5,7 @@ services:
         base_url: "https://api.github.com"
         auth:
           type: "bearer"
-          token: "ghp_yourGithubTokenHere"
+          token: "yourGithubTokenHere"
         headers:
           Accept: "application/vnd.github.v3+json"
           User-Agent: "HippoCurl/1.0"

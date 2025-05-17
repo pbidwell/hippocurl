@@ -1,9 +1,9 @@
-package modules
+package log
 
 import (
 	"bufio"
-	"context"
 	"fmt"
+	"hippocurl/internal/config"
 	"hippocurl/utils"
 	"os"
 )
@@ -23,12 +23,8 @@ func (l LogModule) Use() string {
 	return l.Name()
 }
 
-func (l LogModule) Execute(ctx context.Context, args []string) {
-	logFilePath, ok := ctx.Value(utils.LogFilePath).(string)
-	if !ok {
-		fmt.Println("Log file path not found in context.")
-		return
-	}
+func (l LogModule) Execute(app *config.App, args []string) {
+	logFilePath := app.LogFilePath
 
 	utils.Print("Log File Location", utils.Header2)
 	utils.Print(logFilePath, utils.NormalText)

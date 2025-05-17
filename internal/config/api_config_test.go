@@ -1,4 +1,4 @@
-package utils
+package config
 
 import (
 	"os"
@@ -7,30 +7,20 @@ import (
 )
 
 var (
-	minimalConfig *Config
-	normalConfig  *Config
-	emptyConfig   *Config
+	minimalConfig *APIConfig
+	normalConfig  *APIConfig
+	emptyConfig   *APIConfig
 )
 
 func TestMain(m *testing.M) {
-	var err error
 	base := "testdata"
 
 	// Load configs once
-	minimalConfig, err = loadConfigFromFilepath(filepath.Join(base, "minimal_config.yml"))
-	if err != nil {
-		panic(err)
-	}
+	minimalConfig = loadAPIConfig(filepath.Join(base, "minimal_config.yml"))
 
-	normalConfig, err = loadConfigFromFilepath(filepath.Join(base, "normal_config.yml"))
-	if err != nil {
-		panic(err)
-	}
+	normalConfig = loadAPIConfig(filepath.Join(base, "normal_config.yml"))
 
-	emptyConfig, err = loadConfigFromFilepath(filepath.Join(base, "empty_config.yml"))
-	if err != nil {
-		panic(err)
-	}
+	emptyConfig = loadAPIConfig(filepath.Join(base, "empty_config.yml"))
 
 	// Run tests
 	os.Exit(m.Run())

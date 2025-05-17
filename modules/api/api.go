@@ -1,13 +1,13 @@
-package modules
+package api
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"hippocurl/internal/config"
 	"hippocurl/utils"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -34,17 +34,17 @@ func (a APIModule) Use() string {
 	return fmt.Sprintf("%s [<serviceName> <routeName> <environmentName>]", a.Name())
 }
 
-func (a APIModule) Execute(ctx context.Context, args []string) {
+func (a APIModule) Execute(app *config.App, args []string) {
 	// Module banner
 	utils.Print(a.Name(), utils.ModuleTitle)
 
-	config, ok := ctx.Value(utils.ConfigKey).(*utils.Config)
-	if !ok || len(config.Services) == 0 {
-		utils.Print("No services configured. Please check your configuration file.", utils.NormalText)
-		return
-	}
+	config := app.APIConfig
+	// if !ok || len(config.Services) == 0 {
+	// 	utils.Print("No services configured. Please check your configuration file.", utils.NormalText)
+	// 	return
+	// }
 
-	alogger = ctx.Value(utils.LoggerKey).(*log.Logger)
+	alogger = app.Logger
 
 	var serviceName, routeName, envName string
 	if len(args) > 0 {
@@ -100,7 +100,7 @@ func performHTTPRequest(url string, method string, headers map[string]string, bo
 	utils.Print("Headers", utils.Header2)
 	utils.PrintHeaders(req.Header)
 	utils.Print("Body", utils.Header2)
-	reqBodyBytes, err := ioutil.ReadAll(req.Body)
+	reqBodyBytes, err := io.ReadAll(req.Body)
 	if err != nil {
 		alogger.Printf("Error parsing request body: %v\n", err)
 		fmt.Printf("Error parsing request body: %v\n", err)
@@ -118,7 +118,7 @@ func performHTTPRequest(url string, method string, headers map[string]string, bo
 	}
 	defer resp.Body.Close()
 
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Printf("Error reading response: %v\n", err)
 		return
@@ -133,14 +133,14 @@ func performHTTPRequest(url string, method string, headers map[string]string, bo
 	printFormattedResponse(bodyBytes, resp.Header.Get("Content-Type"))
 }
 
-func getServiceDetails(config *utils.Config, serviceName, routeName, envName string) (*utils.Service, *utils.Route, *utils.Environment, bool) {
-	serviceMap := make(map[string]*utils.Service)
-	for i := range config.Services {
-		serviceMap[config.Services[i].Name] = &config.Services[i]
+func getServiceDetails(apiConfig *config.APIConfig, serviceName, routeName, envName string) (*config.Service, *config.Route, *config.Environment, bool) {
+	serviceMap := make(map[string]*config.Service)
+	for i := range apiConfig.Services {
+		serviceMap[apiConfig.Services[i].Name] = &apiConfig.Services[i]
 	}
 
 	if serviceName == "" || routeName == "" || envName == "" {
-		service, route, env := promptUserForServiceDetails(config)
+		service, route, env := promptUserForServiceDetails(apiConfig)
 		return service, route, env, true
 	}
 
@@ -149,7 +149,7 @@ func getServiceDetails(config *utils.Config, serviceName, routeName, envName str
 		return nil, nil, nil, false
 	}
 
-	routeMap := make(map[string]*utils.Route)
+	routeMap := make(map[string]*config.Route)
 	for i := range service.Routes {
 		routeMap[service.Routes[i].Name] = &service.Routes[i]
 	}
@@ -159,7 +159,7 @@ func getServiceDetails(config *utils.Config, serviceName, routeName, envName str
 		return nil, nil, nil, false
 	}
 
-	envMap := make(map[string]*utils.Environment)
+	envMap := make(map[string]*config.Environment)
 	for i := range service.Environments {
 		envMap[service.Environments[i].Name] = &service.Environments[i]
 	}
@@ -172,7 +172,7 @@ func getServiceDetails(config *utils.Config, serviceName, routeName, envName str
 	return service, route, env, false
 }
 
-func promptUserForServiceDetails(config *utils.Config) (*utils.Service, *utils.Route, *utils.Environment) {
+func promptUserForServiceDetails(config *config.APIConfig) (*config.Service, *config.Route, *config.Environment) {
 	servicePrompt := promptui.Select{
 		Label: "Select a Service",
 		Items: config.GetServiceNames(),
@@ -211,6 +211,7 @@ func promptUserForServiceDetails(config *utils.Config) (*utils.Service, *utils.R
 
 	return service, route, environment
 }
+
 func printFormattedResponse(body []byte, contentType string) {
 	switch {
 	case strings.Contains(contentType, "json"):

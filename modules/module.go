@@ -1,7 +1,7 @@
 package modules
 
 import (
-	"context"
+	"hippocurl/internal/config"
 )
 
 type HippoModule interface {
@@ -9,5 +9,5 @@ type HippoModule interface {
 	Description() string
 	Logo() string
 	Use() string
-	Execute(ctx context.Context, args []string)
+	Execute(config *config.App, args []string)
 }
