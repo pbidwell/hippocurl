@@ -24,9 +24,9 @@ jobs:
         run: |
           VERSION=$(git describe --tags --always)
           mkdir -p dist
-          GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=$VERSION" -o dist/hippocurl-linux-amd64 ./cmd/main.go
-          GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.version=$VERSION" -o dist/hippocurl-mac-amd64 ./cmd/main.go
-          GOOS=windows GOARCH=amd64 go build -ldflags "-X main.version=$VERSION" -o dist/hippocurl-windows-amd64.exe ./cmd/main.go
+          GOOS=linux GOARCH=amd64 go build -ldflags "-X main.version=$VERSION" -o dist/hippocurl-linux-amd64 ./main.go
+          GOOS=darwin GOARCH=amd64 go build -ldflags "-X main.version=$VERSION" -o dist/hippocurl-mac-amd64 ./main.go
+          GOOS=windows GOARCH=amd64 go build -ldflags "-X main.version=$VERSION" -o dist/hippocurl-windows-amd64.exe ./main.go
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
