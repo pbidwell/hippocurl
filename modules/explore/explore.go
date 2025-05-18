@@ -1,3 +1,6 @@
+/*
+Copyright © 2025 Pablo Bidwell <bidwell.pablo@gmail.com>
+*/
 package explore
 
 import (
