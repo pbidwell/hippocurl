@@ -99,6 +99,64 @@ HippoCurl looks for the configuration file in the following location:
 ```
 ~/.hc/api_config.yml
 ```
+##### Example Configuration
+```yaml
+services:
+  - name: GitHubAPI
+    environments:
+      - name: production
+        base_url: "https://api.github.com"
+        auth:
+          type: "bearer"
+          token: "ghp_yourGithubTokenHere"
+        headers:
+          Accept: "application/vnd.github.v3+json"
+          User-Agent: "HippoCurl/1.0"
+
+    routes:
+      - name: get-user
+        description: "Fetch authenticated user info"
+        method: GET
+        path: "/user"
+        body: ""
+
+  - name: HttpBinTest
+    environments:
+      - name: default
+        base_url: "https://httpbin.org"
+        auth:
+          type: "none"
+        headers:
+          Content-Type: "application/json"
+
+    routes:
+      - name: post-json
+        description: "POST JSON test payload"
+        method: POST
+        path: "/post"
+        body: '{"hippo": "rules"}'
+
+      - name: get-ip
+        description: "Get your IP address"
+        method: GET
+        path: "/ip"
+        body: ""
+
+  - name: DuckDuckGo
+    environments:
+      - name: default
+        base_url: "https://duckduckgo.com"
+        auth:
+          type: "none"
+
+    routes:
+      - name: homepage
+        description: "Fetch DuckDuckGo homepage"
+        method: GET
+        path: "/"
+        body: ""
+```
+
 
 ##### Top-Level Structure
 The config file defines a list of `services`, each with their own `environments` and `routes`.
@@ -176,71 +234,6 @@ hc log
 This command displays:
 - The location of the log file.
 - The last 100 lines of logs.
-
-### Configuration
-HippoCurl uses a YAML-based configuration to define services, environments, routes, and authentication details. See the `api_config_sample.yml` file for customization.
-```
-~/.hc/api_config.yml
-```
-Modify this file to add new API services, routes, authentication methods, and custom headers.
-
-#### Example Configuration
-```yaml
-services:
-  - name: GitHubAPI
-    environments:
-      - name: production
-        base_url: "https://api.github.com"
-        auth:
-          type: "bearer"
-          token: "ghp_yourGithubTokenHere"
-        headers:
-          Accept: "application/vnd.github.v3+json"
-          User-Agent: "HippoCurl/1.0"
-
-    routes:
-      - name: get-user
-        description: "Fetch authenticated user info"
-        method: GET
-        path: "/user"
-        body: ""
-
-  - name: HttpBinTest
-    environments:
-      - name: default
-        base_url: "https://httpbin.org"
-        auth:
-          type: "none"
-        headers:
-          Content-Type: "application/json"
-
-    routes:
-      - name: post-json
-        description: "POST JSON test payload"
-        method: POST
-        path: "/post"
-        body: '{"hippo": "rules"}'
-
-      - name: get-ip
-        description: "Get your IP address"
-        method: GET
-        path: "/ip"
-        body: ""
-
-  - name: DuckDuckGo
-    environments:
-      - name: default
-        base_url: "https://duckduckgo.com"
-        auth:
-          type: "none"
-
-    routes:
-      - name: homepage
-        description: "Fetch DuckDuckGo homepage"
-        method: GET
-        path: "/"
-        body: ""
-```
 
 ---
 ## Feature Ideas
