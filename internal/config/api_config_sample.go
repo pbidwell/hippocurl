@@ -1,23 +1,8 @@
+package config
+
+const APIConfigSampleYaml = `
 services:
-  - name: GitHubAPI
-    environments:
-      - name: production
-        base_url: "https://api.github.com"
-        auth:
-          type: "bearer"
-          token: "yourGithubTokenHere"
-        headers:
-          Accept: "application/vnd.github.v3+json"
-          User-Agent: "HippoCurl/1.0"
-
-    routes:
-      - name: get-user
-        description: "Fetch authenticated user info"
-        method: GET
-        path: "/user"
-        body: ""
-
-  - name: HttpBinTest
+  - name: HttpBin
     environments:
       - name: default
         base_url: "https://httpbin.org"
@@ -52,3 +37,4 @@ services:
         method: GET
         path: "/"
         body: ""
+`

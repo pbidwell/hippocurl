@@ -29,7 +29,6 @@ func Load() *App {
 }
 
 func createHCDirectory() string {
-	// Expand home directory if necessary
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatalf("failed to detect home directory: %v\n", err)
@@ -37,9 +36,18 @@ func createHCDirectory() string {
 
 	configDir := filepath.Join(homeDir, hcConfigDirName)
 
-	// Ensure config directory exists
-	if err := os.MkdirAll(configDir, 0755); err != nil {
-		log.Fatalf("Failed to create config directory: %v\n", err)
+	// Check if the directory exists
+	if _, err := os.Stat(configDir); os.IsNotExist(err) {
+		// Create the directory
+		if err := os.MkdirAll(configDir, 0755); err != nil {
+			log.Fatalf("Failed to create config directory: %v\n", err)
+		}
+
+		// Write sample config to api_config.yml
+		apiConfigPath := filepath.Join(configDir, "api_config.yml")
+		if err := os.WriteFile(apiConfigPath, []byte(APIConfigSampleYaml), 0644); err != nil {
+			log.Fatalf("Failed to write sample API config: %v\n", err)
+		}
 	}
 
 	return configDir
