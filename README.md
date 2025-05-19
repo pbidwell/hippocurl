@@ -1,6 +1,6 @@
 # **HippoCurl - A Modular HTTP & Networking Utility** 🦛🌐
 
-HippoCurl (`hc`) is a **modular command-line utility** designed for **HTTP requests, network diagnostics, and security analysis**. It provides an **extensible framework** where users can run various **modules** to perform **API requests, DNS lookups, port scanning, geolocation analysis, and more**.
+HippoCurl (`hc`) is a modular command-line utility designed for HTTP requests, network diagnostics, and security analysis. It provides a framework where users can run modules to perform API requests, DNS lookups, port scanning, geolocation analysis, etc.
 
 ## **Key Features**
  **Modular Architecture** – Extendable with custom modules  
@@ -9,12 +9,9 @@ HippoCurl (`hc`) is a **modular command-line utility** designed for **HTTP reque
  **Security Insights** – Open port scanning, SSL/TLS certificate analysis  
  **CLI-Friendly** – Supports structured output, formatted tables, and spinners for better UX  
 
-## Under Construction
+**Note:** HippoCurl is something I write in my free time to fit the way I like to interact with network entities. It's a simple utility that generally just works, but as with any weekend project: Mandatory "YMMV" warning.
 
-HippoCurl is currently **under development**!
-We are actively building new features, improving performance, and expanding its capabilities.  
-
-In the meantime, feel free to explore the existing modules and contribute to the project.  
+Feel free to explore the existing modules and contribute to the project.
 
 ## Installation
 
